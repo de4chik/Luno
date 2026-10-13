@@ -8,6 +8,6 @@ async function bootstrap() {
   // app.enableCors({ origin: process.env.CLIENT_URL });
   // app.setGlobalPrefix(process.env.SERVER_GLOBAL_PREFIX!);
 
-  await app.listen(5000);
+  await app.listen(5000, '0.0.0.0');
 }
 await bootstrap();
