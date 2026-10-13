@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './resources/auth/auth.module.js';
 import { PrismaModule } from './resources/prisma/prisma.module.js';
+import { JsonwebtokenModule } from './resources/jsonwebtoken/jsonwebtoken.module.js';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { PrismaModule } from './resources/prisma/prisma.module.js';
     }),
     AuthModule,
     PrismaModule,
+    JsonwebtokenModule,
   ],
   controllers: [],
   providers: [],

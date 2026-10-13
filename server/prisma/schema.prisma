@@ -12,8 +12,9 @@ model User {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  phone String  @unique @db.VarChar(16)
-  name  String? @db.VarChar(25)
+  phone    String    @unique @db.VarChar(16)
+  name     String?   @db.VarChar(25)
+  sessions Session[]
 
   // cart
   // orders
@@ -26,11 +27,23 @@ model PhoneVerification {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  phone     String   @db.VarChar(16)
+  phone     String   @unique @db.VarChar(16)
   codeHash  String   @map("code_hash") @db.VarChar(64)
   expiresAt DateTime @map("expires_at")
   attempts  Int      @default(0)
 
-  @@index([phone])
   @@map("phone_verification")
+}
+
+model Session {
+  id        String   @id @default(uuid()) @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  token     String
+  userId    String   @db.Uuid
+  expiresAt DateTime @map("expires_at")
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@map("session")
 }
