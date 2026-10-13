@@ -3,10 +3,14 @@ import { PrismaService } from '../prisma/prisma.service.ts';
 import { randomInt } from 'crypto';
 import bcrypt from 'bcrypt';
 import { AuthDto } from './dto/auth.dto.ts';
+import { JsonwebtokenService } from '../jsonwebtoken/jsonwebtoken.service.ts';
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly jsonwebtoken: JsonwebtokenService,
+  ) {}
 
   async getCode(authDto: AuthDto) {
     //generate code and hash for code
@@ -56,16 +60,26 @@ export class AuthService {
       throw new BadRequestException('Invalid verification code');
     }
 
-    const findUser = await this.prisma.user.upsert({
+    const user = await this.prisma.user.upsert({
       where: { phone: authDto.phone },
       update: {},
       create: { phone: authDto.phone },
     });
 
+    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+    const tokens = await this.jsonwebtoken.generate(user.id);
+    await this.prisma.session.create({
+      data: {
+        token: tokens.accessToken,
+        expiresAt,
+        userId: user.id,
+      },
+    });
     await this.prisma.phoneVerification.delete({
       where: { phone: authDto.phone },
     });
 
-    return findUser;
+    return { user, tokens };
   }
 }

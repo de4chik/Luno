@@ -8,9 +8,11 @@ export class JsonwebtokenService {
     const payload = { id };
     const accessToken = await this.jwt.signAsync(payload, {
       secret: process.env.ACCESS_JWT,
+      expiresIn: '15m',
     });
     const refreshToken = await this.jwt.signAsync(payload, {
       secret: process.env.REFRESH_JWT,
+      expiresIn: '30d',
     });
 
     return { accessToken, refreshToken };
