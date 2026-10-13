@@ -1,18 +1,17 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { UserModule } from './user/user.module.js';
-
-// env file system
-const envFilePath =
-  process.env.NODE_ENV === 'production' ? '.env' : '.env.development';
+import { AuthModule } from './resources/auth/auth.module.js';
+import { PrismaModule } from './resources/prisma/prisma.module.js';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath,
+      envFilePath:
+        process.env.NODE_ENV === 'production' ? '.env' : '.env.development',
     }),
-    UserModule,
+    AuthModule,
+    PrismaModule,
   ],
   controllers: [],
   providers: [],
