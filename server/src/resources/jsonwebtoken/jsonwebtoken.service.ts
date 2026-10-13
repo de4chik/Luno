@@ -17,4 +17,12 @@ export class JsonwebtokenService {
 
     return { accessToken, refreshToken };
   }
+
+  async verify(token: string) {
+    const payload = (await this.jwt.verifyAsync(token, {
+      secret: process.env.ACCESS_JWT,
+    })) as { id: string };
+
+    return payload;
+  }
 }

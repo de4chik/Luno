@@ -12,7 +12,7 @@ model User {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  phone    String    @unique @db.VarChar(16)
+  mail     String    @unique @db.VarChar(100)
   name     String?   @db.VarChar(25)
   sessions Session[]
 
@@ -22,17 +22,17 @@ model User {
   @@map("user")
 }
 
-model PhoneVerification {
+model MailVerification {
   id        String   @id @default(uuid()) @db.Uuid
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  phone     String   @unique @db.VarChar(16)
+  mail      String   @unique @db.VarChar(100)
   codeHash  String   @map("code_hash") @db.VarChar(64)
   expiresAt DateTime @map("expires_at")
   attempts  Int      @default(0)
 
-  @@map("phone_verification")
+  @@map("mail_verification")
 }
 
 model Session {

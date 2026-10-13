@@ -1,10 +1,19 @@
-import { IsInt, IsOptional, IsPhoneNumber, IsString } from 'class-validator';
+import {
+  IsEmail,
+  IsInt,
+  IsOptional,
+  IsPhoneNumber,
+  IsString,
+} from 'class-validator';
 export class AuthDto {
-  @IsPhoneNumber(undefined, {
-    message: 'Invalid phone number',
-  })
-  @IsString({ message: 'Phone must be a string' })
-  phone: string;
+  @IsEmail(
+    {},
+    {
+      message: 'Invalid mail',
+    },
+  )
+  @IsString({ message: 'Mail must be a string' })
+  mail: string;
 
   @IsOptional()
   @IsInt({ message: 'Code must be a number' })

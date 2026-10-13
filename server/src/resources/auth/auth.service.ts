@@ -1,15 +1,21 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.ts';
 import { randomInt } from 'crypto';
 import bcrypt from 'bcrypt';
 import { AuthDto } from './dto/auth.dto.ts';
 import { JsonwebtokenService } from '../jsonwebtoken/jsonwebtoken.service.ts';
+import { MailerService } from '../mailer/mailer.service.ts';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jsonwebtoken: JsonwebtokenService,
+    private readonly mailer: MailerService,
   ) {}
 
   async getCode(authDto: AuthDto) {
@@ -20,34 +26,34 @@ export class AuthService {
     //generate 5 min for code
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
 
-    await this.prisma.phoneVerification.upsert({
-      where: { phone: authDto.phone },
+    await this.prisma.mailVerification.upsert({
+      where: { mail: authDto.mail },
       create: {
-        phone: authDto.phone,
+        mail: authDto.mail,
         expiresAt,
         codeHash,
       },
       update: {
-        phone: authDto.phone,
+        mail: authDto.mail,
         expiresAt,
         codeHash,
       },
     });
-
-    return generateCode;
+    await this.mailer.send(authDto.mail, generateCode);
+    return 'Code sent to your email';
   }
 
   async verify(authDto: AuthDto) {
-    const findCode = await this.prisma.phoneVerification.findUnique({
-      where: { phone: authDto.phone },
+    const findCode = await this.prisma.mailVerification.findUnique({
+      where: { mail: authDto.mail },
     });
     if (!findCode) {
-      throw new BadRequestException('Verification code not');
+      throw new BadRequestException('Wrong email');
     }
 
     if (findCode.expiresAt < new Date()) {
-      // await this.prisma.phoneVerification.delete({
-      //   where: { phone: authDto.phone },
+      // await this.prisma.mailVerification.delete({
+      //   where: { mail: authDto.mail },
       // });
 
       throw new BadRequestException('Verification code has expired');
@@ -61,9 +67,9 @@ export class AuthService {
     }
 
     const user = await this.prisma.user.upsert({
-      where: { phone: authDto.phone },
+      where: { mail: authDto.mail },
       update: {},
-      create: { phone: authDto.phone },
+      create: { mail: authDto.mail },
     });
 
     const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
@@ -71,15 +77,60 @@ export class AuthService {
     const tokens = await this.jsonwebtoken.generate(user.id);
     await this.prisma.session.create({
       data: {
-        token: tokens.accessToken,
+        token: tokens.refreshToken,
         expiresAt,
         userId: user.id,
       },
     });
-    await this.prisma.phoneVerification.delete({
-      where: { phone: authDto.phone },
+    await this.prisma.mailVerification.delete({
+      where: { mail: authDto.mail },
     });
 
     return { user, tokens };
   }
+
+  async profile(id: string) {
+    const user = await this.prisma.user.findUnique({ where: { id } });
+    if (!user) {
+      throw new UnauthorizedException('user unauthorized ');
+    }
+    return user;
+  }
+
+  async refresh(token: string) {
+    console.log(token);
+
+    const session = await this.prisma.session.findFirst({
+      where: {
+        token: token,
+      },
+    });
+    if (!session) {
+      throw new UnauthorizedException('Invalid or expired refresh token');
+    }
+
+    const tokens = await this.jsonwebtoken.generate(session.userId);
+
+    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+    const newSession = await this.prisma.session.updateMany({
+      where: {
+        id: session.id,
+        token: token,
+        expiresAt: { gt: new Date() },
+      },
+      data: {
+        token: tokens.refreshToken,
+        expiresAt,
+      },
+    });
+
+    if (newSession.count !== 1) {
+      throw new UnauthorizedException('Refresh token has already been used');
+    }
+
+    return { ...tokens };
+  }
 }
+//Eugenesuper2004
+//https://hom.1232015@yandex.ru:tfiniJVc2pkJOfMpaB36G5A1uRja@gate.smsaero.ru/v2/sms/send?number=79991481612&text=your+text&sign=SMSAero
