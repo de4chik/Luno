@@ -12,14 +12,29 @@ model User {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  mail     String    @unique @db.VarChar(100)
-  name     String?   @db.VarChar(25)
-  sessions Session[]
+  mail      String     @unique @db.VarChar(100)
+  name      String?    @db.VarChar(25)
+  sessions  Session[]
+  favorites Favorite[]
 
   // cart
   // orders
 
   @@map("user")
+}
+
+model Favorite {
+  id        String   @id @default(uuid()) @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String  @db.Uuid
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String  @db.Uuid
+
+  @@unique([userId, productId])
+  @@map("favorite")
 }
 
 model MailVerification {
@@ -40,10 +55,79 @@ model Session {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  token     String
+  token     String   @unique
   userId    String   @db.Uuid
   expiresAt DateTime @map("expires_at")
   user      User     @relation(fields: [userId], references: [id])
 
   @@map("session")
+}
+
+// Product
+
+model Product {
+  id        String   @id @default(uuid()) @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  name        String
+  description String
+  oldPrice    Decimal?
+  price       Decimal
+  images      String[]
+  color       String
+  sku         String   @unique // generate sku from name descr color and other
+  slug        String   @unique // generate slug from name descr color and other
+  compound    Json
+  brandId     String   @db.Uuid
+  categoryId  String   @db.Uuid
+
+  gender          Gender
+  brand           Brand            @relation(fields: [brandId], references: [id])
+  category        Category         @relation(fields: [categoryId], references: [id])
+  productVariants ProductVariant[]
+  favorites       Favorite[]
+
+  @@map("product")
+}
+
+enum Gender {
+  Man
+  Woman
+  Kids
+}
+
+model Category {
+  id        String   @id @default(uuid()) @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  name     String    @unique
+  products Product[]
+
+  @@map("category")
+}
+
+model Brand {
+  id        String   @id @default(uuid()) @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  name     String    @unique
+  products Product[]
+
+  @@map("brand")
+}
+
+model ProductVariant {
+  id        String   @id @default(uuid()) @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  product   Product @relation(fields: [productId], references: [id])
+  productId String  @db.Uuid
+  size      String
+  quantity  Int
+
+  @@map("product_variant")
 }

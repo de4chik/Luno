@@ -1,9 +1,7 @@
-import { Injectable } from '@nestjs/common';
 import nodemailer from 'nodemailer';
 
-@Injectable()
 export class MailerService {
-  async send(mail: string, code: string) {
+  async sendCode(mail: string, code: string) {
     const transport = nodemailer.createTransport({
       host: process.env.MAILER_SMTP,
       port: process.env.MAILER_PORT,
@@ -17,7 +15,9 @@ export class MailerService {
       from: process.env.MAILER_USER,
       to: mail,
       subject: 'Your code',
-      text: code,
+      text: code.toString(),
     });
   }
 }
+
+export const Mailer = new MailerService();

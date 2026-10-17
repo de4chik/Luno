@@ -3,7 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './resources/auth/auth.module.js';
 import { PrismaModule } from './resources/prisma/prisma.module.js';
 import { JsonwebtokenModule } from './resources/jsonwebtoken/jsonwebtoken.module.js';
-import { MailerModule } from './resources/mailer/mailer.module.js';
+import { CategoryModule } from './resources/category/category.module.js';
 
 @Module({
   imports: [
@@ -15,7 +15,7 @@ import { MailerModule } from './resources/mailer/mailer.module.js';
     AuthModule,
     PrismaModule,
     JsonwebtokenModule,
-    MailerModule,
+    CategoryModule,
   ],
   controllers: [],
   providers: [],
