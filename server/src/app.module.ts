@@ -4,6 +4,8 @@ import { AuthModule } from './resources/auth/auth.module.js';
 import { PrismaModule } from './resources/prisma/prisma.module.js';
 import { JsonwebtokenModule } from './resources/jsonwebtoken/jsonwebtoken.module.js';
 import { CategoryModule } from './resources/category/category.module.js';
+import { BrandModule } from './resources/brand/brand.module.js';
+import { ProductModule } from './resources/product/product.module.js';
 
 @Module({
   imports: [
@@ -16,6 +18,8 @@ import { CategoryModule } from './resources/category/category.module.js';
     PrismaModule,
     JsonwebtokenModule,
     CategoryModule,
+    BrandModule,
+    ProductModule,
   ],
   controllers: [],
   providers: [],

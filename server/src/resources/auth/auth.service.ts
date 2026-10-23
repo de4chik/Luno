@@ -8,7 +8,7 @@ import { randomInt } from 'crypto';
 import bcrypt from 'bcrypt';
 import { AuthDto } from './dto/auth.dto.ts';
 import { JsonwebtokenService } from '../jsonwebtoken/jsonwebtoken.service.ts';
-import { Mailer } from '../../utils/send.util.ts';
+import { Mailer } from '../../services/send.service.ts';
 
 @Injectable()
 export class AuthService {
