@@ -3,9 +3,7 @@ import { PrismaService } from '../prisma/prisma.service.ts';
 import { CreateProductDto } from './dto/create-product.dto.ts';
 import { BrandService } from '../brand/brand.service.ts';
 import { CategoryService } from '../category/category.service.ts';
-import slugify from 'slugify';
 import { generateSku } from '../../services/sku.service.ts';
-import { UpdateProductDto } from './dto/update-product.dto.ts';
 
 @Injectable()
 export class ProductService {
@@ -53,8 +51,11 @@ export class ProductService {
     });
   }
 
-  async findAll() {
-    return await this.prisma.product.findMany();
+  async findAll(limit: [number, number] = [0, 10]) {
+    return await this.prisma.product.findMany({
+      skip: limit[0],
+      take: limit[1],
+    });
   }
 
   async findById(id: string) {
@@ -68,39 +69,49 @@ export class ProductService {
   }
 
   async findBySlug(slug: string) {
-    const product = await this.prisma.product.findUnique({
+    return await this.prisma.product.findUnique({
       where: { slug },
       include: {
         brand: true,
-        category: true,
         productVariants: true,
       },
     });
-
-    if (!product) {
-      throw new NotFoundException('Product not found');
-    }
-
-    return product;
   }
 
-  async update(id: string, updateProductDto: UpdateProductDto) {
-    const product = await this.prisma.product.findUnique({
-      where: { id },
-    });
-
-    if (!product) {
-      throw new NotFoundException('Product not found');
-    }
-
-    const { productVariants, ...productData } = updateProductDto;
-
-    return this.prisma.product.update({
-      where: { id },
-      data: productData,
+  async findBySku(sku: string) {
+    return await this.prisma.product.findUnique({
+      where: { sku },
       include: {
+        brand: true,
         productVariants: true,
       },
+    });
+  }
+
+  async findByBrand(brandName: string, limit: [number, number] = [0, 10]) {
+    return await this.prisma.product.findMany({
+      where: {
+        brand: {
+          name: brandName,
+        },
+      },
+      skip: limit[0],
+      take: limit[1],
+    });
+  }
+
+  async findByCategory(
+    categoryName: string,
+    limit: [number, number] = [0, 10],
+  ) {
+    return await this.prisma.product.findMany({
+      where: {
+        category: {
+          name: categoryName,
+        },
+      },
+      skip: limit[0],
+      take: limit[1],
     });
   }
 }
